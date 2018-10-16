@@ -15,6 +15,10 @@ import shutil
 import re
 import urllib
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 
 class ConfluenceException(Exception):
     """ Exception for Confluence export issues """

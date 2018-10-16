@@ -117,6 +117,9 @@ def handle_html_references(html_content, page_duplicate_file_names, page_file_ma
     :param depth: (optional) Hierarchy depth of the handled Confluence page.
     :returns: Fixed HTML content.
     """
+    if not html_content:
+        return 'No content'
+    
     try:
         html_tree = html.fromstring(html_content)
     except XMLSyntaxError:
