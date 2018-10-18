@@ -56,9 +56,12 @@ def derive_downloaded_file_name(download_url):
         download_page_id = download_url_parts[3]
         download_file_type = download_url_parts[2]
 
-        # Remove GET parameters
-        last_question_mark_index = download_url_parts[4].rfind('?')
-        download_original_file_name = download_url_parts[4][:last_question_mark_index]
+        # Remove GET parameters if any
+        download_original_file_name = ''
+        if len(download_url_parts) > 4:
+            last_question_mark_index = download_url_parts[4].rfind('?')
+            if last_question_mark_index > -1:
+                download_original_file_name = download_url_parts[4][:last_question_mark_index]
 
         return '%s_%s_%s' % (download_page_id, download_file_type, download_original_file_name)
     elif '/rest/documentConversion/latest/conversion/thumbnail/' in download_url:
@@ -426,8 +429,11 @@ def main():
 
     # Delete old export
     if os.path.exists(settings.EXPORT_FOLDER):
-        shutil.rmtree(settings.EXPORT_FOLDER)
-    os.makedirs(settings.EXPORT_FOLDER)
+        print('Updating export folder %s' % settings.EXPORT_FOLDER)
+        # shutil.rmtree(settings.EXPORT_FOLDER)
+    else:
+        print('Creating export folder %s' % settings.EXPORT_FOLDER)
+        os.makedirs(settings.EXPORT_FOLDER)
 
     # Read HTML template
     template_file = open(settings.TEMPLATE_FILE)
@@ -465,9 +471,15 @@ def main():
         space_folder_name = provide_unique_file_name(duplicate_space_names, space_matching, space, is_folder=True)
         space_folder = '%s/%s' % (settings.EXPORT_FOLDER, space_folder_name)
         try:
-            os.makedirs(space_folder)
+            if not os.path.exists(space_folder):
+                print('Creating space folder %s' % space_folder)
+                os.makedirs(space_folder)
+            else:
+                print('Updating space folder %s' % space_folder)
+
             download_folder = '%s/%s' % (space_folder, settings.DOWNLOAD_SUB_FOLDER)
-            os.makedirs(download_folder)
+            if not os.path.exists(download_folder):
+                os.makedirs(download_folder)
 
             space_url = '%s/rest/api/space/%s?expand=homepage' % (settings.CONFLUENCE_BASE_URL, space)
             response = utils.http_get(space_url, auth=settings.HTTP_AUTHENTICATION,

@@ -60,9 +60,12 @@ def http_download_binary_file(request_url, file_path, auth=None, headers=None, v
     response = requests.get(request_url, stream=True, auth=auth, headers=headers, verify=verify_peer_certificate,
                             proxies=proxies)
     if 200 == response.status_code:
-        with open(file_path, 'wb') as downloaded_file:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, downloaded_file)
+        try:
+            with open(file_path, 'wb') as downloaded_file:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, downloaded_file)
+        except IOError as e:
+            print('http_download_binary_file error: %s' % e)
     else:
         raise ConfluenceException('Error %s: %s on requesting %s' % (response.status_code, response.reason,
                                                                      request_url))
@@ -74,8 +77,11 @@ def write_2_file(path, content):
     :param path: Local file path.
     :param content: String content to persist.
     """
-    with open(path, 'w') as the_file:
-        the_file.write(content.encode('utf8'))
+    try:
+        with open(path, 'w') as the_file:
+            the_file.write(content.encode('utf8'))
+    except IOError as e:
+        print('write_2_file error: %s' % e)
 
 
 def write_html_2_file(path, title, content, html_template, additional_headers=None):
